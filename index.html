@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spline Cri Trigger Optimisé + Audio</title>
+
+<!-- Pré-chauffe des connexions -->
+<link rel="preconnect" href="https://my.spline.design" crossorigin>
+<link rel="dns-prefetch" href="//my.spline.design">
+<link rel="preconnect" href="https://prod.spline.design" crossorigin>
+<link rel="dns-prefetch" href="//prod.spline.design">
+
+<!-- Préchargement de la scène 2 (sans exécution) -->
+<link rel="prefetch" href="https://my.spline.design/pikachuimdscene2-3VjFjAoaFqUV3rbPCj9pDuyD/">
+<link rel="preload" href="https://my.spline.design/pikachuimdscene2-3VjFjAoaFqUV3rbPCj9pDuyD/" as="document">
+<link rel="prerender" href="https://my.spline.design/pikachuimdscene2-3VjFjAoaFqUV3rbPCj9pDuyD/">
+
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+  }
+  #spline {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: black;
+  }
+</style>
+</head>
+<body>
+
+<!-- Iframe unique -->
+<iframe
+  id="spline"
+  src="https://my.spline.design/untitled-k0wWGuWnwIvRkGhnka4Jx8lX/"
+  allow="autoplay; fullscreen; xr-spatial-tracking; microphone"
+  referrerpolicy="no-referrer"
+  muted
+></iframe>
+
+<script>
+const SCENE_2 = "https://my.spline.design/pikachuimdscene2-3VjFjAoaFqUV3rbPCj9pDuyD/";
+
+// Détection de cri/bruit fort
+async function detectShout(callback) {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const audioContext = new AudioContext();
+  const analyser = audioContext.createAnalyser();
+  analyser.fftSize = 512;
+
+  const source = audioContext.createMediaStreamSource(stream);
+  source.connect(analyser);
+
+  const dataArray = new Uint8Array(analyser.fftSize);
+  let detectionActive = true;
+
+  function checkVolume() {
+    if (!detectionActive) return;
+    analyser.getByteTimeDomainData(dataArray);
+    let max = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+      const v = Math.abs(dataArray[i] - 128);
+      if (v > max) max = v;
+    }
+    if (max > 70) { // seuil à ajuster selon ton micro
+      detectionActive = false;
+      try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      callback();
+      return;
+    }
+    requestAnimationFrame(checkVolume);
+  }
+  checkVolume();
+}
+
+// Switch direct vers la scène 2
+function switchScene() {
+  const iframe = document.getElementById("spline");
+  iframe.removeAttribute("muted"); // enlève le mute pour autoriser le son
+  iframe.src = SCENE_2;
+}
+
+// Lance l’écoute
+detectShout(switchScene);
+</script>
+
+</body>
+</html>
