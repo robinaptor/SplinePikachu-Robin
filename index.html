@@ -69,7 +69,7 @@ async function detectShout(callback) {
       const v = Math.abs(dataArray[i] - 128);
       if (v > max) max = v;
     }
-    if (max > 70) { // seuil à ajuster selon ton micro
+    if (max > 90) { // seuil à ajuster selon ton micro
       detectionActive = false;
       try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
       callback();
